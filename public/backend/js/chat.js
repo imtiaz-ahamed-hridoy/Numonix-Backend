@@ -1,0 +1,1 @@
+$((function () { "use strict"; if (document.querySelector("#ChatBody")) { new PerfectScrollbar("#ChatBody", { useBothWheelAxes: !0, suppressScrollX: !0 }) } if (document.querySelector(".profile-details-main")) { new PerfectScrollbar(".profile-details-main", { useBothWheelAxes: !0, suppressScrollX: !0 }) } }));

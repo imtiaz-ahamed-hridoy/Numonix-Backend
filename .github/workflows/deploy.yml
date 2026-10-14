@@ -1,0 +1,103 @@
+﻿name: Production Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: 'Execute database migrations'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: production_deployment
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION || '8.2' }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, curl
+          coverage: none
+
+      - name: Configure SSH Environment
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Package Application Archive
+        run: |
+          tar -czf /tmp/app_release.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/cache/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/views/*' \
+            .
+
+      - name: Upload Release Archive
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          TARGET_DIR: ${{ vars.DEPLOY_PATH }}
+        run: |
+          scp -P "$SSH_PORT" -i ~/.ssh/deploy_key /tmp/app_release.tar.gz "$SSH_USER@$SSH_HOST:/tmp/app_release.tar.gz"
+
+      - name: Execute Remote Deployment
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          TARGET_DIR: ${{ vars.DEPLOY_PATH }}
+          RUN_MIGRATE: ${{ inputs.run_migrations != false }}
+        run: |
+          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" "
+            set -e
+            cd $TARGET_DIR
+            php artisan down || true
+            tar -xzf /tmp/app_release.tar.gz -C $TARGET_DIR --overwrite
+            rm -f /tmp/app_release.tar.gz
+            mkdir -p storage/app/public storage/app/private storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache public/uploads
+            chmod -R 775 storage bootstrap/cache public/uploads
+            composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+            if [ \"$RUN_MIGRATE\" = \"true\" ]; then
+              php artisan migrate --force
+            fi
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan storage:link || true
+            php artisan queue:restart
+            php artisan up
+          "
+
+      - name: Clean Up Credentials
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key /tmp/app_release.tar.gz

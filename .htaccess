@@ -1,0 +1,34 @@
+RewriteOptions inherit
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# ── Static asset shortcut: serve directly if the file exists in public/ ──────
+# This handles:
+#   /uploads/avatar/xxx.png  → public/uploads/avatar/xxx.png  ✓
+#   /storage/...             → public/storage/...             (legacy symlink path)
+#   /favicon.ico, /robots.txt etc.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+RewriteRule ^(.*)$ public/$1 [L,QSA]
+
+# ── Anything else goes to public/index.php (the Laravel front controller) ───
+RewriteCond %{REQUEST_URI} !/public
+RewriteRule ^(.*)$ public/$1 [L,QSA]
+
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Cache static files for 30 days to improve performance
+    <FilesMatch "\.(png|jpg|jpeg|gif|ico|svg|webp|mp3|mp4|woff2|woff|ttf|css|js)$">
+        Header set Cache-Control "public, max-age=2592000"
+        Header unset Pragma
+        Header unset Expires
+    </FilesMatch>
+
+    # API responses must not be cached
+    <FilesMatch "\.php$">
+        Header set Cache-Control "private, no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>

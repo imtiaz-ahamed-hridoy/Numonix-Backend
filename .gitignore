@@ -1,0 +1,150 @@
+# ==========================================
+# Dependencies & Package Managers
+# ==========================================
+/vendor/
+/node_modules/
+package-lock.json.backup
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.composer/
+composer.phar
+
+# ==========================================
+# Environment & Sensitive Credentials (CRITICAL)
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.pfx
+*.key
+*.crt
+*.cert
+*.jks
+*.keystore
+oauth-private.key
+oauth-public.key
+
+# Deploy scripts and client server configurations
+askpass.bat
+deploy.ps1
+clean_server.ps1
+deploy.sh
+/deploy/
+*.postman_collection.json
+*.postman_environment.json
+*.insomnia.json
+*.har
+
+# Firebase Service Account Credentials
+*firebase-credentials*.json
+firebase-credentials.json
+*firebase-adminsdk*.json
+*service-account*.json
+GoogleService-Info*.plist
+google-services*.json
+storage/app/*.json
+storage/app/private/*.json
+storage/firebase-credentials.json
+
+# ==========================================
+# Laravel Runtime & Storage
+# ==========================================
+/storage/*.key
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/private/
+!/storage/app/private/.gitignore
+!/storage/app/public/
+!/storage/app/public/.gitignore
+/storage/app/public/bug-reports/*
+/storage/app/public/uploads/*
+/storage/app/public/temp/*
+/storage/app/public/founder-imports/*
+/storage/pail/
+/storage/debugbar/
+
+# Bootstrap Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# Compiled Assets & Storage Symlink
+/public/build/
+/public/hot
+/public/storage
+/public/uploads/
+
+# ==========================================
+# Logs, Caches, Temp, Backups, Dumps
+# ==========================================
+*.log
+.phpunit.result.cache
+.phpunit.cache/
+.php-cs-fixer.cache
+.phpstan.cache
+.phpactor.json
+/coverage/
+*.tmp
+*.bak
+*.old
+*.dump
+*.sql
+*.csv.tmp
+*.xlsx.tmp
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-journal
+/database/dumps/
+
+# ==========================================
+# Archives and Build Output
+# ==========================================
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+/build/
+
+# ==========================================
+# IDE & Operating System Files
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+.fleet/
+.nova/
+.zed/
+Homestead.json
+Homestead.yaml
+auth.json
+*.sublime-project
+*.sublime-workspace
+.agents/
+FINAL_REPORT.md
+NUMONIX_CLIENT_GUIDE.md
+DEPLOYMENT_README.md
